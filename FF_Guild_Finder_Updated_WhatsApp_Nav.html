@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <title>FF Guild Finder</title>
+  <style>
+    :root { --bg:#0b1020; --panel:#151d30; --panel2:#10182a; --orange:#ffb52e; --text:#f5f7ff; --muted:#a8b1c7; --line:#2a3650; --green:#43d9a3; --red:#ff7272; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(ellipse at top,#182440 0%,var(--bg) 52%); color:var(--text); font-family:Arial,Helvetica,sans-serif; min-height:100vh; }
+    button,input,textarea,select { font:inherit; }
+    button { cursor:pointer; }
+    .wrap { width:min(100%,720px); margin:0 auto; padding:18px 14px 100px; }
+    .brand { display:flex; align-items:center; gap:11px; margin:4px 0 20px; }
+    .logo { width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#ffcf67,#ff8a00);color:#151515;font-weight:900;font-size:19px;box-shadow:0 8px 24px #ff9b0025; }
+    .brand h1 { margin:0;color:var(--orange);font-size:22px;letter-spacing:.2px; }
+    .brand p { margin:4px 0 0;color:var(--muted);font-size:12px; }
+    .card { background:linear-gradient(160deg,#182239,var(--panel)); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:14px; box-shadow:0 12px 28px #00000020; }
+    h2 { margin:0 0 8px;font-size:21px; }
+    h3 { margin:0 0 8px;font-size:17px; }
+    p { line-height:1.55; }
+    .muted { color:var(--muted); }
+    .small { font-size:12px; }
+    .field { margin:13px 0; }
+    label { display:block;font-size:13px;font-weight:700;margin-bottom:7px;color:#dce3f5; }
+    input,textarea,select { width:100%; padding:13px 12px; border:1px solid #34415e; border-radius:11px; background:#0b1324;color:var(--text); outline:none; }
+    input:focus,textarea:focus,select:focus { border-color:var(--orange); box-shadow:0 0 0 2px #ffb52e20; }
+    textarea { resize:vertical; min-height:82px; }
+    .btn { border:0;border-radius:11px;padding:12px 15px;font-weight:800; }
+    .primary { background:linear-gradient(135deg,#ffd36b,#ff9a00);color:#151515; }
+    .secondary { background:#25324b;color:var(--text);border:1px solid #3a4968; }
+    .danger { background:#3a2028;color:#ffb7b7;border:1px solid #6b3540; }
+    .full { width:100%; }
+    .row { display:flex;gap:10px;align-items:center; }
+    .row > * { flex:1; min-width:0; }
+    .hidden { display:none !important; }
+    .notice { border-radius:11px;padding:11px 12px;margin:10px 0;background:#18283a;border:1px solid #304a62;color:#cce7ff;font-size:13px;line-height:1.5; }
+    .notice.error { background:#351e27;border-color:#693643;color:#ffc3c3; }
+    .notice.success { background:#123128;border-color:#24604c;color:#a9ffdc; }
+    .features { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px; }
+    .feature { background:#0d1628;border:1px solid #293650;border-radius:13px;padding:13px; }
+    .feature b { display:block;margin:7px 0 4px; }
+    .feature span { font-size:12px;color:var(--muted);line-height:1.45; }
+    .guild { border:1px solid #30405d;background:#0e1729;border-radius:14px;padding:14px;margin-top:11px; }
+    .guild-top { display:flex;justify-content:space-between;gap:12px;align-items:flex-start; }
+    .guild h3 { overflow-wrap:anywhere; }
+    .pill { display:inline-block;background:#342b19;color:#ffd47b;border:1px solid #6b5429;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;white-space:nowrap; }
+    .meta { display:flex;flex-wrap:wrap;gap:7px;margin:10px 0; }
+    .meta span { color:#c3cce0;background:#1a263c;padding:6px 8px;border-radius:8px;font-size:12px; }
+    .bottom-nav { position:fixed;bottom:0;left:0;right:0;z-index:10;background:#0b1020f2;backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:9px 10px calc(9px + env(safe-area-inset-bottom));display:flex;justify-content:center; }
+    .nav-inner { width:min(100%,720px);display:flex;align-items:center;gap:8px; }
+    .nav-brand { display:flex;align-items:center;gap:7px;min-width:0;margin-right:auto;padding:0 7px; }
+    .nav-logo { width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(145deg,#ffcf67,#ff8a00);color:#151515;font-size:14px;font-weight:900;box-shadow:0 4px 14px #ff9b0025; }
+    .nav-brand-name { color:var(--orange);font-size:11px;font-weight:800;line-height:1.2;max-width:82px; }
+    .nav-actions { display:grid;grid-template-columns:repeat(3,minmax(48px,1fr));gap:5px; }
+    .nav-btn { min-width:48px;background:transparent;border:0;color:#9ba8c2;border-radius:12px;padding:7px 6px;font-size:11px;font-weight:700; }
+    .nav-btn .nav-icon { display:block;font-size:19px;margin-bottom:3px; }
+    .nav-btn.active { color:var(--orange);background:#25243a; }
+    @media(max-width:360px) { .nav-brand-name { display:none; } .nav-brand { padding:0 2px; } .nav-actions { gap:2px; } .nav-btn { min-width:43px;padding:7px 3px; } }
+    .profile-head { display:flex;gap:13px;align-items:center; }
+    .avatar { width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#ffd36b,#ff8a00);display:grid;place-items:center;color:#171717;font-size:22px;font-weight:900;flex-shrink:0; }
+    .divider { border:0;border-top:1px solid var(--line);margin:17px 0; }
+    .empty { text-align:center;color:var(--muted);padding:22px 10px; }
+    .foot { text-align:center;color:#74819a;font-size:11px;margin:20px 0; }
+    @media(max-width:420px) { .card{padding:15px}.features{grid-template-columns:1fr 1fr}.brand h1{font-size:20px}.row.stack-mobile{flex-direction:column;align-items:stretch} }
+
+    /* WhatsApp-inspired three-tab layout and game-style home */
+    body { background:radial-gradient(ellipse at top,#101d35 0%,#080e19 58%); }
+    .wrap { width:min(100%,600px); padding:14px 14px 105px; }
+    .brand { position:sticky;top:0;z-index:8;background:#080e19f5;backdrop-filter:blur(12px);padding:8px 2px 12px;margin:0 0 10px; }
+    .logo { border-radius:12px;background:transparent;box-shadow:none;color:#ffb52e;font-size:35px;font-style:italic; }
+    .brand h1 { color:#f5f7ff;font-size:24px; }
+    .brand h1 .brand-ff { color:#ffb52e; }
+    .brand p { display:none; }
+    .top-tools { margin-left:auto;display:flex;gap:16px;align-items:center;color:#c5d2e8;font-size:23px; }
+    .quick-search { display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:15px 17px;background:#111c2e;border:1px solid #293953;border-radius:35px; }
+    .quick-search .magnify { font-size:25px;color:#c7d5ee; }
+    .quick-search input { border:0;background:transparent;padding:2px 0; }
+    .home-banner { min-height:170px;padding:23px 20px;border-radius:22px;border:1px solid #293b75;background:radial-gradient(ellipse at 85% 15%,#283e85,transparent 43%),linear-gradient(125deg,#10183a,#071126 67%,#422508);display:flex;flex-direction:column;justify-content:center;overflow:hidden;margin-bottom:8px; }
+    .home-banner small { letter-spacing:3px;color:#d6e0f5;font-weight:700; }
+    .home-banner h2 { font-size:clamp(29px,7vw,39px);line-height:1.05;font-style:italic;margin:12px 0; }
+    .home-banner h2 span { color:#ffb52e; }
+    .home-banner p { margin:0;color:#d9e4f7;letter-spacing:1.4px;font-size:12px; }
+    .home-filters { display:flex;gap:9px;overflow-x:auto;padding:12px 0 17px;scrollbar-width:none; }
+    .home-filters::-webkit-scrollbar { display:none; }
+    .filter-chip { flex-shrink:0;border:1px solid #2b3954;background:#111b2d;color:#d1def2;border-radius:30px;padding:11px 17px; }
+    .filter-chip.active { background:#ffc400;border-color:#ffc400;color:#101010;font-weight:800; }
+    .home-heading { display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0; }
+    .home-heading h2 { margin:0;font-size:20px; }
+    .guild { border:1px solid #1f3049;background:linear-gradient(135deg,#111c2e,#0b1423);border-radius:19px;padding:15px;margin-top:12px;box-shadow:0 8px 20px #0002; }
+    .guild-top { align-items:center; }
+    .guild h3 { font-size:17px; }
+    .pill { background:#f6a923;color:#171717;border:0;border-radius:8px;padding:6px 9px; }
+    .meta span { border-radius:20px;background:#1b2b43; }
+    .bottom-nav { border:1px solid #1e2d43;border-bottom:0;border-radius:26px 26px 0 0;background:#0b1423f7;padding:10px 12px calc(10px + env(safe-area-inset-bottom)); }
+    .nav-inner { width:min(100%,600px);display:block; }
+    .nav-brand { display:none; }
+    .nav-actions { width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:6px; }
+    .nav-btn { border-radius:15px;padding:8px 5px 7px;font-size:13px;min-width:0; }
+    .nav-btn .nav-icon { font-size:25px;margin-bottom:4px; }
+    .nav-btn.active { color:#ffc400;background:transparent;position:relative; }
+    .nav-btn.active:after { content:"";display:block;width:48%;height:3px;border-radius:4px;background:#ffc400;margin:7px auto 0; }
+    .page { padding-top:2px; }
+    @media(max-width:360px) { .brand h1{font-size:21px}.nav-btn{font-size:12px}.home-banner h2{font-size:29px} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="brand">
+      <div class="logo">FF</div>
+      <div><h1><span class="brand-ff">FF</span> Guild Finder</h1><p>Find your squad. Discover your guild.</p></div>
+      <div class="top-tools" aria-hidden="true"><span>♧</span><span>⋮</span></div>
+    </header>
+    <div class="quick-search"><span class="magnify">⌕</span><input id="quickSearch" placeholder="Search Guild by Name, ID or Leader UID" aria-label="Search guilds"></div>
+
+    <section id="loginScreen" class="card">
+      <h2>Welcome, Gamer! 🎮</h2>
+      <p class="muted">Apne Google account se login karo aur apni profile bana kar guilds explore karo.</p>
+      <button id="googleLogin" class="btn primary full">🌐 Continue with Google</button>
+      <div id="loginMessage" class="notice hidden"></div>
+      <p class="small muted">Login karne se pehle apne Google account ka sahi account select karein.</p>
+    </section>
+
+    <section id="profileSetupScreen" class="card hidden">
+      <h2>🎮 Create Your Gamer Profile</h2>
+      <p class="muted">Ye details apni profile banane ke liye bharein. Contact detail private rahegi.</p>
+      <form id="profileForm">
+        <div class="field"><label for="gameNickname">Game Nickname *</label><input id="gameNickname" maxlength="40" required placeholder="Apna in-game nickname"></div>
+        <div class="field"><label for="gameUid">Game UID *</label><input id="gameUid" inputmode="numeric" maxlength="30" required placeholder="Apna game UID"></div>
+        <div class="field"><label for="contactDetail">Contact Detail (Private) *</label><input id="contactDetail" maxlength="100" required placeholder="Email ya contact detail"></div>
+        <div class="notice">🔒 Contact detail sirf tumhari apni profile mein dikhai jayegi. Guild listing mein nahi.</div>
+        <button class="btn primary full" type="submit">Create Profile & Continue</button>
+      </form>
+      <div id="profileSetupMessage" class="notice hidden"></div>
+    </section>
+
+    <section id="appScreen" class="hidden">
+      <section id="homePage" class="page">
+        <div class="home-banner">
+          <small>WELCOME, GAMER</small>
+          <h2>FIND YOUR<br><span>PERFECT GUILD</span></h2>
+          <p>PLAY&nbsp; • &nbsp;GROW&nbsp; • &nbsp;WIN TOGETHER</p>
+        </div>
+        <div class="home-filters" aria-label="Guild filters">
+          <button class="filter-chip active" data-filter="All">All</button>
+          <button class="filter-chip" data-filter="Top">Top Guilds</button>
+          <button class="filter-chip" data-filter="High">High Level</button>
+          <button class="filter-chip" data-filter="Active">Active</button>
+          <button class="filter-chip" data-filter="New">New</button>
+        </div>
+        <div class="home-heading"><h2>🔥 Published Guilds</h2><button id="refreshGuilds" class="btn secondary">↻</button></div>
+        <p class="muted small" style="margin-top:0">Real guilds published by users</p>
+        <div id="homeGuildList"><div class="empty">Guilds load ho rahi hain…</div></div>
+      </section>
+
+      <section id="searchPage" class="page hidden">
+        <div class="card">
+          <h2>🔍 Search Guild</h2>
+          <p class="muted">Guild Name, Guild ID, Leader UID ya Guild Level se search karein.</p>
+          <div class="field"><label for="levelSearch">Guild Name / Guild ID / Leader UID / Level</label><input id="levelSearch" placeholder="Guild name, ID, UID ya level"></div>
+          <div class="row"><button id="searchBtn" class="btn primary">Search Guild</button><button id="clearSearch" class="btn secondary">Show All</button></div>
+          <div id="searchGuildList"><div class="empty">Search karne ke liye Guild Level enter karein.</div></div>
+        </div>
+      </section>
+
+      <section id="profilePage" class="page hidden">
+        <div class="card">
+          <div class="profile-head">
+            <div id="profileAvatar" class="avatar">G</div>
+            <div><h2 id="profileTitle">Your Profile</h2><p id="profileEmail" class="muted small"></p></div>
+          </div>
+          <hr class="divider">
+          <div id="profileDetails"></div>
+          <button id="editProfileBtn" class="btn secondary full" style="margin-top:12px">✏️ Edit Profile</button>
+          <form id="profileEditForm" class="hidden">
+            <div class="field"><label for="editNickname">Game Nickname</label><input id="editNickname" maxlength="40" required></div>
+            <div class="field"><label for="editUid">Game UID</label><input id="editUid" maxlength="30" required></div>
+            <div class="field"><label for="editContact">Contact Detail (Private)</label><input id="editContact" maxlength="100" required></div>
+            <button class="btn primary full" type="submit">Save Profile</button>
+            <button id="cancelProfileEdit" class="btn secondary full" type="button" style="margin-top:8px">Cancel</button>
+          </form>
+          <div id="profileMessage" class="notice hidden"></div>
+          <hr class="divider">
+          <button id="logoutBtn" class="btn danger full">Log Out</button>
+        </div>
+
+        <div class="card" id="publishCard">
+          <h2>🛡️ Publish Your Guild</h2>
+          <p class="muted">Apni guild ki details bharo. Sirf tum apni published guild edit kar sakte ho.</p>
+          <form id="guildForm">
+            <input id="editGuildDocId" type="hidden">
+            <div class="field"><label for="guildId">Guild ID *</label><input id="guildId" maxlength="40" required placeholder="Guild ki ID"></div>
+            <div class="field"><label for="guildName">Guild Name *</label><input id="guildName" maxlength="50" required placeholder="Guild ka naam"></div>
+            <div class="row">
+              <div class="field"><label for="guildLevel">Guild Level *</label><input id="guildLevel" type="number" min="1" max="999" required placeholder="Level"></div>
+              <div class="field"><label for="guildMembers">Current Members *</label><input id="guildMembers" type="number" min="1" max="50" required placeholder="e.g. 45"></div>
+            </div>
+            <button id="publishGuildBtn" class="btn primary full" type="submit">🚀 Publish Guild</button>
+            <button id="cancelGuildEdit" class="btn secondary full hidden" type="button" style="margin-top:8px">Cancel Edit</button>
+          </form>
+          <div id="guildFormMessage" class="notice hidden"></div>
+        </div>
+
+        <div class="card">
+          <h2>✏️ My Published Guilds</h2>
+          <p class="muted small">Apni guild ko update karne ke liye Edit dabayein.</p>
+          <div id="myGuildList"><div class="empty">Tumhari guilds load ho rahi hain…</div></div>
+        </div>
+      </section>
+    </section>
+    <div id="globalMessage" class="notice hidden"></div>
+    <div class="foot">FF Guild Finder • Community-made guild directory</div>
+  </main>
+
+  <nav id="bottomNav" class="bottom-nav hidden" aria-label="Main navigation">
+    <div class="nav-inner">
+      <div class="nav-actions">
+        <button class="nav-btn active" data-page="homePage"><span class="nav-icon">⌂</span>Home</button>
+        <button class="nav-btn" data-page="searchPage"><span class="nav-icon">⌕</span>Search Guild</button>
+        <button class="nav-btn" data-page="profilePage"><span class="nav-icon">♙</span>Profile</button>
+      </div>
+    </div>
+  </nav>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, serverTimestamp, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase Console > Project settings > Your apps se apna web config yahan check karein.
+    const firebaseConfig = {
+      apiKey: "AIzaSyCG64twHNrhL3zzz9IZWCjQEWdrvdTXGCc",
+      authDomain: "ff-guild-finder.firebaseapp.com",
+      projectId: "ff-guild-finder",
+      storageBucket: "ff-guild-finder.firebasestorage.app",
+      messagingSenderId: "829159563717",
+      appId: "1:829159563717:web:7ed38858eca43864c4abac",
+      measurementId: "G-XKE25B2Q0K"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    let currentUser = null;
+    let currentProfile = null;
+    let cachedGuilds = [];
+
+    const $ = id => document.getElementById(id);
+    const show = el => el.classList.remove("hidden");
+    const hide = el => el.classList.add("hidden");
+
+    function message(id, text, type = "") {
+      const el = $(id);
+      el.textContent = text;
+      el.className = "notice" + (type ? " " + type : "");
+      show(el);
+    }
+    function clearMessage(id) { hide($(id)); }
+    function safeText(value) {
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch]));
+    }
+    function showAppScreen(which) {
+      hide($("loginScreen")); hide($("profileSetupScreen"));
+      if (which === "login") {
+        show($("loginScreen")); hide($("appScreen")); hide($("bottomNav"));
+      } else if (which === "setup") {
+        show($("profileSetupScreen")); hide($("appScreen")); hide($("bottomNav"));
+      } else {
+        show($("appScreen")); show($("bottomNav"));
+      }
+    }
+    function goTo(pageId) {
+      document.querySelectorAll(".page").forEach(p => hide(p));
+      show($(pageId));
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page === pageId));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (pageId === "profilePage") { renderProfile(); loadMyGuilds(); }
+      if (pageId === "homePage") loadGuilds();
+    }
+    document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => goTo(btn.dataset.page)));
+
+    document.querySelectorAll(".filter-chip").forEach(btn => btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-chip").forEach(b => b.classList.toggle("active", b === btn));
+      activeGuildFilter = btn.dataset.filter;
+      renderGuilds(filteredHomeGuilds(), "homeGuildList");
+    }));
+    $("quickSearch").addEventListener("focus", () => goTo("searchPage"));
+    $("quickSearch").addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        goTo("searchPage");
+        $("levelSearch").value = $("quickSearch").value.trim();
+        $("searchBtn").click();
+        $("quickSearch").blur();
+      }
+    });
+
+    $("googleLogin").addEventListener("click", async () => {
+      clearMessage("loginMessage");
+      $("googleLogin").disabled = true;
+      $("googleLogin").textContent = "Opening Google…";
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        message("loginMessage", authError(error), "error");
+      } finally {
+        $("googleLogin").disabled = false;
+        $("googleLogin").textContent = "🌐 Continue with Google";
+      }
+    });
+
+    function authError(error) {
+      if (error?.code === "auth/unauthorized-domain") return "Ye website domain Firebase mein authorized nahi hai. Firebase Authentication > Settings > Authorized domains mein apna GitHub Pages domain add karein.";
+      if (error?.code === "auth/popup-blocked") return "Popup block ho gaya. Website ko Chrome mein kholkar popup allow karein.";
+      if (error?.code === "auth/operation-not-allowed") return "Firebase Console > Authentication > Sign-in method mein Google provider enable karein.";
+      return "Login nahi ho saka: " + (error?.message || error?.code || "Unknown error");
+    }
+
+    onAuthStateChanged(auth, async user => {
+      currentUser = user;
+      if (!user) {
+        currentProfile = null;
+        showAppScreen("login");
+        return;
+      }
+      try {
+        const profileRef = doc(db, "users", user.uid);
+        const snap = await getDoc(profileRef);
+        if (!snap.exists() || !snap.data().gameNickname || !snap.data().gameUid || !snap.data().contactDetail) {
+          showAppScreen("setup");
+          if (snap.exists()) {
+            $("gameNickname").value = snap.data().gameNickname || "";
+            $("gameUid").value = snap.data().gameUid || "";
+            $("contactDetail").value = snap.data().contactDetail || "";
+          }
+          return;
+        }
+        currentProfile = snap.data();
+        showAppScreen("app");
+        goTo("homePage");
+      } catch (error) {
+        showAppScreen("login");
+        message("loginMessage", "Profile load nahi hui. Firestore Rules aur database setup check karein. " + (error.message || ""), "error");
+      }
+    });
+
+    $("profileForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      if (!currentUser) return;
+      const profile = {
+        gameNickname: $("gameNickname").value.trim(),
+        gameUid: $("gameUid").value.trim(),
+        contactDetail: $("contactDetail").value.trim(),
+        email: currentUser.email || "",
+        updatedAt: serverTimestamp()
+      };
+      if (!profile.gameNickname || !profile.gameUid || !profile.contactDetail) {
+        message("profileSetupMessage", "Teeno fields bharein.", "error"); return;
+      }
+      try {
+        await setDoc(doc(db, "users", currentUser.uid), profile, { merge: true });
+        currentProfile = { ...profile, updatedAt: new Date() };
+        showAppScreen("app");
+        goTo("homePage");
+      } catch (error) {
+        message("profileSetupMessage", "Profile save nahi hui. Firestore Rules check karein. " + (error.message || ""), "error");
+      }
+    });
+
+    function renderProfile() {
+      if (!currentUser || !currentProfile) return;
+      $("profileAvatar").textContent = (currentProfile.gameNickname || "G").trim().charAt(0).toUpperCase();
+      $("profileTitle").textContent = currentProfile.gameNickname || "Your Profile";
+      $("profileEmail").textContent = currentUser.email || "";
+      $("profileDetails").innerHTML = `
+        <p><span class="muted">Game Nickname</span><br><b>${safeText(currentProfile.gameNickname)}</b></p>
+        <p><span class="muted">Game UID</span><br><b>${safeText(currentProfile.gameUid)}</b></p>
+        <p><span class="muted">Contact Detail (Private)</span><br><b>${safeText(currentProfile.contactDetail)}</b></p>
+        <p class="small muted">🔒 Ye contact detail sirf tumhare signed-in account ke liye accessible hai.</p>`;
+      $("editNickname").value = currentProfile.gameNickname || "";
+      $("editUid").value = currentProfile.gameUid || "";
+      $("editContact").value = currentProfile.contactDetail || "";
+    }
+    $("editProfileBtn").addEventListener("click", () => { show($("profileEditForm")); hide($("editProfileBtn")); });
+    $("cancelProfileEdit").addEventListener("click", () => { hide($("profileEditForm")); show($("editProfileBtn")); renderProfile(); });
+    $("profileEditForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      try {
+        const updates = {
+          gameNickname: $("editNickname").value.trim(),
+          gameUid: $("editUid").value.trim(),
+          contactDetail: $("editContact").value.trim(),
+          email: currentUser.email || "",
+          updatedAt: serverTimestamp()
+        };
+        await setDoc(doc(db, "users", currentUser.uid), updates, { merge: true });
+        currentProfile = { ...currentProfile, ...updates };
+        renderProfile(); hide($("profileEditForm")); show($("editProfileBtn"));
+        message("profileMessage", "Profile update ho gayi!", "success");
+      } catch (error) {
+        message("profileMessage", "Profile update nahi hui: " + (error.message || ""), "error");
+      }
+    });
+
+    $("logoutBtn").addEventListener("click", async () => {
+      try { await signOut(auth); }
+      catch (error) { message("profileMessage", "Logout error: " + (error.message || ""), "error"); }
+    });
+
+    function guildCard(g, docId, isOwner = false) {
+      return `<article class="guild">
+        <div class="guild-top"><div style="display:flex;gap:12px;align-items:center;min-width:0"><div style="width:65px;height:65px;flex:0 0 65px;display:grid;place-items:center;border-radius:15px;background:#070d18;border:1px solid #263650;font-size:31px">🛡️</div><div style="min-width:0"><h3>${safeText(g.guildName || "Unnamed Guild")}</h3><div class="meta" style="margin:7px 0 0"><span>👥 ${safeText(g.memberCount)}/50</span></div></div></div><span class="pill">Lv. ${safeText(g.guildLevel)}</span></div>
+        <div class="meta"><span>🆔 ${safeText(g.guildId || "—")}</span><span>👑 ${safeText(g.ownerNickname || "Guild Leader")}</span></div>
+        ${isOwner ? `<button class="btn secondary full edit-guild-btn" data-id="${safeText(docId)}">✏️ Edit Guild</button>` : ""}
+      </article>`;
+    }
+    let activeGuildFilter = "All";
+    function filteredHomeGuilds() {
+      let list = cachedGuilds.slice();
+      if (activeGuildFilter === "Top") list = list.filter(g => Number(g.data.guildLevel) >= 4);
+      if (activeGuildFilter === "High") list = list.filter(g => Number(g.data.guildLevel) >= 4);
+      // The current Firestore schema has no verified active-status field; Active shows published guilds.
+      if (activeGuildFilter === "Active") list = list;
+      // Newest guilds are already ordered first by createdAt.
+      if (activeGuildFilter === "New") list = list.slice(0, 10);
+      return list;
+    }
+    function renderGuilds(list, targetId, ownerOnly = false) {
+      const target = $(targetId);
+      if (!list.length) {
+        target.innerHTML = `<div class="empty">${ownerOnly ? "Abhi tumne koi guild publish nahi ki." : "Koi guild nahi mili. Dusra Guild Level try karein."}</div>`;
+        return;
+      }
+      target.innerHTML = list.map(item => guildCard(item.data, item.id, ownerOnly)).join("");
+      if (ownerOnly) {
+        target.querySelectorAll(".edit-guild-btn").forEach(btn => btn.addEventListener("click", () => startGuildEdit(btn.dataset.id)));
+      }
+    }
+    async function loadGuilds() {
+      if (!currentUser) return;
+      $("homeGuildList").innerHTML = '<div class="empty">Guilds load ho rahi hain…</div>';
+      try {
+        const q = query(collection(db, "guilds"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        cachedGuilds = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+        renderGuilds(filteredHomeGuilds(), "homeGuildList");
+      } catch (error) {
+        $("homeGuildList").innerHTML = '<div class="notice error">Guilds load nahi hui. Firestore Rules check karein.</div>';
+        console.error(error);
+      }
+    }
+    $("refreshGuilds").addEventListener("click", loadGuilds);
+
+    $("searchBtn").addEventListener("click", async () => {
+      const term = $("levelSearch").value.trim().toLowerCase();
+      clearMessage("globalMessage");
+      try {
+        const q = query(collection(db, "guilds"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        cachedGuilds = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+        const matches = !term ? cachedGuilds : cachedGuilds.filter(item => {
+          const g = item.data;
+          return [g.guildName, g.guildId, g.ownerUid, g.ownerNickname, g.guildLevel]
+            .some(v => String(v ?? "").toLowerCase().includes(term));
+        });
+        renderGuilds(matches, "searchGuildList");
+      } catch (error) {
+        message("globalMessage", "Search nahi ho saka. Firestore Rules check karein. " + (error.message || ""), "error");
+      }
+    });
+    $("clearSearch").addEventListener("click", async () => {
+      $("levelSearch").value = "";
+      try {
+        const q = query(collection(db, "guilds"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        cachedGuilds = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+        renderGuilds(cachedGuilds, "searchGuildList");
+      } catch (error) { message("globalMessage", "Guilds load nahi hui: " + (error.message || ""), "error"); }
+    });
+
+    $("guildForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      if (!currentUser || !currentProfile) return;
+      const docId = $("editGuildDocId").value;
+      const guildData = {
+        guildId: $("guildId").value.trim(),
+        guildName: $("guildName").value.trim(),
+        guildLevel: Number($("guildLevel").value),
+        memberCount: Number($("guildMembers").value),
+        ownerUid: currentUser.uid,
+        ownerNickname: currentProfile.gameNickname,
+        updatedAt: serverTimestamp()
+      };
+      if (!guildData.guildId || !guildData.guildName || !Number.isFinite(guildData.guildLevel) || guildData.guildLevel < 1 || !Number.isFinite(guildData.memberCount) || guildData.memberCount < 1 || guildData.memberCount > 50) {
+        message("guildFormMessage", "Guild ID, name, valid level aur 1–50 members enter karein.", "error"); return;
+      }
+      try {
+        if (docId) {
+          // Verify ownership again before editing.
+          const ref = doc(db, "guilds", docId);
+          const existing = await getDoc(ref);
+          if (!existing.exists() || existing.data().ownerUid !== currentUser.uid) {
+            message("guildFormMessage", "Sirf apni guild edit kar sakte ho.", "error"); return;
+          }
+          await updateDoc(ref, guildData);
+          message("guildFormMessage", "Guild details update ho gayi!", "success");
+        } else {
+          guildData.createdAt = serverTimestamp();
+          await addDoc(collection(db, "guilds"), guildData);
+          message("guildFormMessage", "Guild successfully publish ho gayi!", "success");
+        }
+        resetGuildForm();
+        await loadMyGuilds();
+        await loadGuilds();
+      } catch (error) {
+        message("guildFormMessage", "Guild save nahi hui. Firestore Rules check karein. " + (error.message || ""), "error");
+      }
+    });
+
+    async function loadMyGuilds() {
+      if (!currentUser) return;
+      $("myGuildList").innerHTML = '<div class="empty">Tumhari guilds load ho rahi hain…</div>';
+      try {
+        const q = query(collection(db, "guilds"), where("ownerUid", "==", currentUser.uid));
+        const snap = await getDocs(q);
+        const list = snap.docs.map(d => ({ id: d.id, data: d.data() })).sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
+        renderGuilds(list, "myGuildList", true);
+      } catch (error) {
+        $("myGuildList").innerHTML = '<div class="notice error">Apni guilds load nahi hui. Agar Firebase composite index maange, error ke link se index create karein. ' + safeText(error.message || "") + '</div>';
+      }
+    }
+    async function startGuildEdit(id) {
+      try {
+        const snap = await getDoc(doc(db, "guilds", id));
+        if (!snap.exists() || snap.data().ownerUid !== currentUser.uid) {
+          message("guildFormMessage", "Sirf apni guild edit kar sakte ho.", "error"); return;
+        }
+        const g = snap.data();
+        $("editGuildDocId").value = id;
+        $("guildId").value = g.guildId || "";
+        $("guildName").value = g.guildName || "";
+        $("guildLevel").value = g.guildLevel ?? "";
+        $("guildMembers").value = g.memberCount ?? "";
+        $("publishGuildBtn").textContent = "💾 Save Guild Changes";
+        show($("cancelGuildEdit"));
+        $("publishCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (error) {
+        message("guildFormMessage", "Guild details open nahi hui: " + (error.message || ""), "error");
+      }
+    }
+    function resetGuildForm() {
+      $("guildForm").reset();
+      $("editGuildDocId").value = "";
+      $("publishGuildBtn").textContent = "🚀 Publish Guild";
+      hide($("cancelGuildEdit"));
+    }
+    $("cancelGuildEdit").addEventListener("click", resetGuildForm);
+  </script>
+</body>
+</html>
